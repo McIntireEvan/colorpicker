@@ -1,38 +1,36 @@
 $.widget('colorwheel.colorwheel', {
     options: {
-        width: 100,
-        height: 100,
-        border: 0,
-        radius: 50,
+        size: 200,
         ringSize: 30,
         color: 180
     },
-
-    _create: function() {
-        can = $('<canvas>').attr({
-            width: this.options.width,
-            height: this.options.height,
+    _create: function () {
+        this.radius = this.options.size / 2;
+        var can = $('<canvas>').attr({
+            width: this.options.size,
+            height: this.options.size,
             id: 'colorwheel'
-        }).css({
-            'border': this.options.border + 'px solid black'
-        }).appendTo(this.element);
-        this.element.append($('<div>').addClass('colorwheel-outer').css({
+        });
+
+        var outer = $('<div/>').addClass('colorwheel-outer').css({
             width: this.options.ringSize,
             height: this.options.ringSize
-        }));
-        this.element.append($('<div>').addClass('colorwheel-inner'));
+        });
+
+        var inner = $('<div/>').addClass('colorwheel-inner');
+
+        this.element.append(outer).append(inner).append(can);
+
         ctx = can.get(0).getContext('2d');
-        x = this.options.width / 2;
-        y = this.options.height / 2;
-        focusOut = false;
-        focusIn = false;
+        x = y = this.radius;
+        focusOut = focusIn = false;
         
         //Initialize outer wheel
         for (var i = 0; i < 360; i++) {
             ctx.beginPath();
             ctx.fillStyle = 'hsl(' + i + ', 100%, 50%)';
             ctx.moveTo(x, y);
-            ctx.arc(x, y, this.options.radius, (i - 2) * (Math.PI/180), (i * (Math.PI/180)), false);
+            ctx.arc(x, y, this.radius, (i - 2) * (Math.PI / 180), (i * (Math.PI / 180)), false);
             ctx.lineTo(x, y);  
             ctx.fill();
         }
@@ -40,12 +38,12 @@ $.widget('colorwheel.colorwheel', {
         ctx.beginPath();
         ctx.fillStyle = 'white';
         ctx.moveTo(x, y);
-        ctx.arc(x, y, this.options.radius - this.options.ringSize, 0, 2*Math.PI, false);
+        ctx.arc(x, y, this.radius - this.options.ringSize, 0, 2 * Math.PI, false);
         ctx.fill();
         var _this = this;
+        var length = Math.sqrt(2 * Math.pow(_this.radius - _this.options.ringSize, 2));
         var renderInner = function() {
             //Draw inner box
-            var length = Math.sqrt(2 * Math.pow(_this.options.radius - _this.options.ringSize, 2));
             var half = length / 2;
             ctx.lineWidth = 1;
             ctx.strokeRect(x - half + 2, y - half + 2, length - 2, length - 2);
@@ -71,18 +69,19 @@ $.widget('colorwheel.colorwheel', {
         };
 
         renderInner();
-        //TODO: Fix magic values from here down
         var updateInner = function(evt) {
-            var offset = _this.getRelativePos(can, evt);
-            var xDiff = Math.sqrt(Math.pow(x - offset.x, 2));
-            var yDiff = Math.sqrt(Math.pow(y - offset.y, 2));
+            //TODO: Cleanup more?
+            var offset = _this._getRelativePos(can, evt);
+            var xDiff = Math.abs(x - offset.x);
+            var yDiff = Math.abs(y - offset.y);
             var dist = Math.sqrt(Math.pow(x - offset.x, 2) + Math.pow(y - offset.y, 2));
-            var length = Math.sqrt(2 * Math.pow(_this.options.radius - _this.options.ringSize, 2)) /2;
-            if (dist < _this.options.radius - _this.options.ringSize && xDiff < length && yDiff < length) {
-                $('.colorwheel-inner').css({
-                    left: evt.pageX -5,
-                    top: evt.pageY - 5
-                });
+            if (dist < _this.radius - _this.options.ringSize &&
+                xDiff < length &&
+                yDiff < length) {
+                    inner.css({
+                        left: evt.pageX -5,
+                        top: evt.pageY - 5
+                    });
             }
         }
         var updateOuter = function(evt) {
@@ -91,9 +90,8 @@ $.widget('colorwheel.colorwheel', {
                 angle = 360 - (angle * -1);
             }
 
-            var middle = _this.options.radius - ((_this.options.ringSize) / 2);
-            console.log(middle);
-            _this.element.children('.colorwheel-outer').css({
+            var middle = _this.radius - ((_this.options.ringSize) / 2);
+            outer.css({
                 left: Math.cos(rawAngle) * middle + x - 10,
                 top: Math.sin(rawAngle) * middle + y - 10
             });
@@ -107,10 +105,10 @@ $.widget('colorwheel.colorwheel', {
             var eX = evt.pageX - parentOffset.left;
             var eY = evt.pageY - parentOffset.top;
             var dist = Math.sqrt(Math.pow(x -eX, 2) + Math.pow(y - eY, 2));
-            if (dist < _this.options.radius && dist > _this.options.radius - _this.options.ringSize) {
+            if (dist < _this.radius && dist > _this.radius - _this.options.ringSize) {
                 focusOut = true;
                 updateOuter(evt);
-            } else if (dist < _this.options.radius - _this.options.ringSize) {
+            } else if (dist < _this.radius - _this.options.ringSize) {
                 focusIn = true;
                 updateInner(evt);
             }
@@ -129,11 +127,11 @@ $.widget('colorwheel.colorwheel', {
     },
 
     getColor: function() {
-        var c = ctx.getImageData(offset.x, offset.y, 1, 1).data
+        var c = ctx.getImageData(offset.x, offset.y, 1, 1).data;
         return {'r':c[0], 'g':c[1], 'b':c[2]};
     },
 
-    getRelativePos: function (element, evt) {
+    _getRelativePos: function (element, evt) {
         var parentOffset = $(element).offset();
         var eX = evt.pageX - parentOffset.left;
         var eY = evt.pageY - parentOffset.top;
@@ -141,6 +139,6 @@ $.widget('colorwheel.colorwheel', {
     },
 
     destroy: function() {
-
+        this.element.children('.colorwheel, .colorwheel-inner, .colorwheel-outer').remove();
     }
 });
