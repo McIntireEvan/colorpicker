@@ -21,8 +21,8 @@ $.widget('colorwheel.colorwheel', {
 
         this.element.append(outer).append(inner).append(can);
 
-        ctx = can.get(0).getContext('2d');
-        x = y = this.radius;
+        var ctx = can.get(0).getContext('2d');
+        var x = y = this.radius;
         focusOut = focusIn = false;
         
         //Initialize outer wheel
@@ -76,8 +76,8 @@ $.widget('colorwheel.colorwheel', {
             var yDiff = Math.abs(y - offset.y);
             var dist = Math.sqrt(Math.pow(x - offset.x, 2) + Math.pow(y - offset.y, 2));
             if (dist < _this.radius - _this.options.ringSize &&
-                xDiff < length &&
-                yDiff < length) {
+                xDiff < length/2 &&
+                yDiff < length / 2) {
                     inner.css({
                         left: evt.pageX -5,
                         top: evt.pageY - 5
@@ -92,8 +92,8 @@ $.widget('colorwheel.colorwheel', {
 
             var middle = _this.radius - ((_this.options.ringSize) / 2);
             outer.css({
-                left: Math.cos(rawAngle) * middle + x - 10,
-                top: Math.sin(rawAngle) * middle + y - 10
+                left: Math.cos(rawAngle) * middle + x - (_this.options.ringSize / 2) + 5,
+                top: Math.sin(rawAngle) * middle + y - (_this.options.ringSize / 2) + 5
             });
             _this.options.color = Math.round(angle);
             renderInner();
