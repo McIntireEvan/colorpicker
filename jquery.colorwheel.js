@@ -36,10 +36,8 @@
 
             $('#colorwheel, .colorwheel-outer, .colorwheel-inner').on('mousedown', function (evt) {
                 evt.preventDefault();
-                var parentOffset = can.parent().offset();
-                var eX = evt.pageX - parentOffset.left;
-                var eY = evt.pageY - parentOffset.top;
-                var dist = Math.sqrt(Math.pow(x -eX, 2) + Math.pow(y - eY, 2));
+                var offset = getRelativePos(can, evt);
+                var dist = Math.sqrt(Math.pow(can.position().left + x - offset.x, 2) + Math.pow(can.position().top + y - offset.y, 2));
                 if (dist < radius && dist > radius - options.ringSize) {
                     focusOut = true;
                     updateOuter(evt);
@@ -157,8 +155,8 @@
 
             setPos(options.color * (Math.PI / 180));
             inner.css({
-                left: element.position().left + x - 5,
-                top: element.position().top + y - 5
+                left: can.position().left + x - 5,
+                top: can.position().top + y - 5
             });
             return this;
         });
