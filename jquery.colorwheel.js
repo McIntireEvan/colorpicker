@@ -5,7 +5,7 @@
             var options = $.extend({
                 size: 500,
                 ringSize: 50,
-                color: 270,
+                color: 180,
                 onInput: function(evt) {}
             }, params);
 
@@ -66,13 +66,14 @@
             var setPos = function (angle) {
                 var middle = radius - ((options.ringSize) / 2);
                 outer.css({
-                    left: Math.cos(angle) * middle + x - (options.ringSize / 2) + 5,
-                    top: Math.sin(angle) * middle + y - (options.ringSize / 2) + 5
+                    left: Math.cos(angle) * middle + can.position().left + x - (options.ringSize / 2) - 2,
+                    top: Math.sin(angle) * middle + can.position().top + y - (options.ringSize / 2) - 2
                 });
             }
 
             var updateOuter = function(evt) {
-                var rawAngle = Math.atan2(evt.pageY - y, evt.pageX - x), angle = rawAngle * 180 / Math.PI;
+                var offset = getRelativePos(can, evt);
+                var rawAngle = Math.atan2(offset.y - y, offset.x - x), angle = rawAngle * 180 / Math.PI;
                 if (rawAngle < 0) {
                     angle = 360 - (angle * -1);
                 }
@@ -88,8 +89,8 @@
                 var dist = Math.sqrt(Math.pow(x - offset.x, 2) + Math.pow(y - offset.y, 2));
                 if (dist < radius - options.ringSize && xDiff < half && yDiff < half) {
                     inner.css({
-                        left: evt.pageX -5,
-                        top: evt.pageY - 5
+                        left: can.position().left + offset.x -5,
+                        top: can.position().top + offset.y - 5
                     });
                 }
             };
@@ -156,8 +157,8 @@
 
             setPos(options.color * (Math.PI / 180));
             inner.css({
-                left: x - 5,
-                top: y - 5
+                left: element.position().left + x - 5,
+                top: element.position().top + y - 5
             });
             return this;
         });
