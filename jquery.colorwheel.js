@@ -1,13 +1,13 @@
 (function ($) {
-    $.fn.colorwheel = function(options) {
+    $.fn.colorwheel = function(params) {
         return this.each(function() {
             var element = $(this);
             var options = $.extend({
                 size: 500,
                 ringSize: 50,
-                color: 180,
+                color: 270,
                 onInput: function(evt) {}
-            }, options);
+            }, params);
 
             var radius = x = y = options.size / 2;
             var length = Math.sqrt(2 * Math.pow(radius - options.ringSize, 2));
@@ -28,8 +28,12 @@
             var inner = $('<div/>').addClass('colorwheel-inner');
             element.append(outer).append(inner).append(can);
 
+            var onInput = function () {
+                options.onInput({ 'color': getColor() });
+            }
+
             var focusOut = false, focusIn = false;
-            console.log(element);
+
             $('#colorwheel, .colorwheel-outer, .colorwheel-inner').on('mousedown', function (evt) {
                 evt.preventDefault();
                 var parentOffset = can.parent().offset();
@@ -39,9 +43,11 @@
                 if (dist < radius && dist > radius - options.ringSize) {
                     focusOut = true;
                     updateOuter(evt);
+                    onInput();
                 } else if (dist < radius - options.ringSize) {
                     focusIn = true;
                     updateInner(evt);
+                    onInput();
                 }
             });
 
@@ -50,21 +56,27 @@
             }).on('mousemove', function (evt) {
                 if (focusOut) {
                     updateOuter(evt);
+                    onInput();
                 } else if (focusIn) {
                     updateInner(evt);
+                    onInput();
                 }
             });
+
+            var setPos = function (angle) {
+                var middle = radius - ((options.ringSize) / 2);
+                outer.css({
+                    left: Math.cos(angle) * middle + x - (options.ringSize / 2) + 5,
+                    top: Math.sin(angle) * middle + y - (options.ringSize / 2) + 5
+                });
+            }
+
             var updateOuter = function(evt) {
                 var rawAngle = Math.atan2(evt.pageY - y, evt.pageX - x), angle = rawAngle * 180 / Math.PI;
                 if (rawAngle < 0) {
                     angle = 360 - (angle * -1);
                 }
-
-                var middle = radius - ((options.ringSize) / 2);
-                outer.css({
-                    left: Math.cos(rawAngle) * middle + x - (options.ringSize / 2) + 5,
-                    top: Math.sin(rawAngle) * middle + y - (options.ringSize / 2) + 5
-                });
+                setPos(rawAngle);
                 options.color = Math.round(angle);
                 renderInner();
             };
@@ -137,8 +149,16 @@
                 return {x: eX, y: eY};
             }
             renderOuter();
-            renderInner();
+            for(var i = 0; i < 3; i++) {
+                //TODO: Update renderInner() to make a for loop not needed here
+                renderInner();
+            }
 
+            setPos(options.color * (Math.PI / 180));
+            inner.css({
+                left: x - 5,
+                top: y - 5
+            });
             return this;
         });
     }
