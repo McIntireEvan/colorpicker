@@ -37,7 +37,7 @@
             $('#colorwheel, .colorwheel-outer, .colorwheel-inner').on('mousedown', function (evt) {
                 evt.preventDefault();
                 var offset = getRelativePos(can, evt);
-                var dist = Math.sqrt(Math.pow(can.position().left + x - offset.x, 2) + Math.pow(can.position().top + y - offset.y, 2));
+                var dist = Math.sqrt(Math.pow(x - offset.x, 2) + Math.pow(y - offset.y, 2));
                 if (dist < radius && dist > radius - options.ringSize) {
                     focusOut = true;
                     updateOuter(evt);
@@ -113,7 +113,7 @@
             var renderInner = function() {
                 ctx.lineWidth = 1;
                 ctx.strokeRect(x - half + 2, y - half + 2, length - 2, length - 2);
-
+                for(var j = 0; j<5;j++){
                 for (var i = 0; i < 100; i++) {
                     var line = ctx.createLinearGradient(
                         x - half + 2,
@@ -132,6 +132,7 @@
                         length - 2,
                         (length - 2) / 100
                     );
+                }
                 };
             };
 
@@ -148,10 +149,7 @@
                 return {x: eX, y: eY};
             }
             renderOuter();
-            for(var i = 0; i < 3; i++) {
-                //TODO: Update renderInner() to make a for loop not needed here
-                renderInner();
-            }
+            renderInner();
 
             setPos(options.color * (Math.PI / 180));
             inner.css({
