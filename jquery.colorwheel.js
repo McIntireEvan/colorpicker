@@ -137,8 +137,8 @@
             };
 
             var getColor = function() {
-                var x = inner.position().left + 15;
-                var y = inner.position().top + 15;
+                var x = inner.position().left + 5;
+                var y = inner.position().top + 5;
                 var c = ctx.getImageData(x, y, 1, 1).data;
                 return {'r':c[0], 'g':c[1], 'b':c[2]};
             }
